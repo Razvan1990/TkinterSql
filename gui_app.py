@@ -1,5 +1,7 @@
 import sqlite3
 import tkinter
+from tkinter import ttk
+import ttkthemes
 import os
 
 from checker import CheckThings
@@ -16,6 +18,18 @@ class GuiInterface:
 
     def cancel_x_button_level_2(self):
         pass
+
+    def return_treeview_x(self, root_value, table_name):
+        title ="EXIT"
+        message = "Are you sure you want to exit"
+        close = messagebox.askokcancel(title, message)
+        if close:
+            root_value.destroy()
+            self.see_records(table_name)
+        else:
+            return
+
+
 
     def return_main_window_with_x(self, root_value, option):
         global title, message
@@ -362,6 +376,136 @@ class GuiInterface:
         cancel_button.place(relx=0.7, rely=0.6, anchor='center')
         root_edit.mainloop()
 
+    def open_entry(self, event):
+        #first we create the root things like in edit
+        #view_root.destroy()
+        global root_treeview_edit
+        root_treeview_edit = Tk()
+        root_treeview_edit.title("VIEW RECORD")
+        root_treeview_edit.iconbitmap(r"2020-world11-men-1100-names.ico")
+        root_treeview_edit.geometry("400x400")
+        root_treeview_edit["bg"] = "#A29476"
+        #root_treeview_edit.protocol("WM_DELETE_WINDOW", lambda: self.return_treeview_x(root_treeview_edit, self.table))
+        #create labels and
+        first_name_entry_tree = Entry(root_treeview_edit, width=35, justify="center", font=("Comic Sans", 9, "bold"),
+                                      cursor="star",
+                                      bg="#D4E2D0")
+        first_name_entry_tree.grid(row=0, column=1, pady=(5, 5))
+        last_name_entry_tree = Entry(root_treeview_edit, width=35, justify="center", font=("Comic Sans", 9, "bold"),
+                                     cursor="star",
+                                     bg="#D4E2D0")
+        last_name_entry_tree.grid(row=1, column=1, pady=(5, 5))
+        club_entry_tree = Entry(root_treeview_edit, width=35, justify="center", font=("Comic Sans", 9, "bold"),
+                                cursor="star",
+                                bg="#D4E2D0")
+        club_entry_tree.grid(row=2, column=1, pady=(5, 5))
+        nationality_entry_tree = Entry(root_treeview_edit, width=35, justify="center", font=("Comic Sans", 9, "bold"),
+                                       cursor="star",
+                                       bg="#D4E2D0")
+        nationality_entry_tree.grid(row=3, column=1, pady=(5, 5))
+        age_entry_tree = Entry(root_treeview_edit, width=35, justify="center", font=("Comic Sans", 9, "bold"),
+                               cursor="star",
+                               bg="#D4E2D0")
+        age_entry_tree.grid(row=4, column=1)
+        # make labels
+        first_name_label_tree = Label(root_treeview_edit, text="First name", justify="center",
+                                      font=("Comic Sans", 11, "bold"),
+                                      cursor="star", fg="#C7A8B1", bg="#A29476")
+        first_name_label_tree.grid(row=0, column=0, padx=5, pady=(5, 5))
+        last_name_label_tree = Label(root_treeview_edit, text="Last name", justify="center",
+                                     font=("Comic Sans", 11, "bold"),
+                                     cursor="star", fg="#C7A8B1", bg="#A29476")
+        last_name_label_tree.grid(row=1, column=0, padx=5, pady=(5, 5))
+        club_label_tree = Label(root_treeview_edit, text="Club", justify="center", font=("Comic Sans", 11, "bold"),
+                                cursor="star", fg="#C7A8B1", bg="#A29476")
+        club_label_tree.grid(row=2, column=0, padx=5, pady=(5, 5))
+        nationality_label_tree = Label(root_treeview_edit, text="Nationality", justify="center",
+                                       font=("Comic Sans", 11, "bold"),
+                                       cursor="star", fg="#C7A8B1", bg="#A29476")
+        nationality_label_tree.grid(row=3, column=0, padx=5, pady=(5, 5))
+        age_label_tree = Label(root_treeview_edit, text="Age", justify="center", font=("Comic Sans", 11, "bold"),
+                               cursor="star", fg="#C7A8B1", bg="#A29476")
+        age_label_tree.grid(row=4, column=0, padx=5, pady=(5, 5))
+        #now define the binding
+        for footballer in tree_footballers.selection():
+            player = tree_footballers.item(footballer)
+            record = player["values"]
+            #insert into entries
+            first_name_entry_tree.insert(0, record[1])
+            last_name_entry_tree.insert(0, record[2])
+            club_entry_tree.insert(0, record[3])
+            nationality_entry_tree.insert(0, record[4])
+            age_entry_tree.insert(0, str(record[5]))
+        root_treeview_edit.mainloop()
+
+
+    def see_records(self, table_name):
+        global view_root
+        global tree_footballers
+        # create the connection and get all records
+        database = os.path.join(constants.DATABASE_FOLDER, constants.DATABASE)
+        connection = sqlite3.connect(database)
+        my_cursor = connection.cursor()
+        my_cursor.execute("""SELECT oid, * FROM """ + table_name)
+        list_entries = my_cursor.fetchall()
+        connection.close()
+        # create a treeview to see these items with a root a frame
+        view_root = Tk()
+        view_root.title("ALL RECORDS")
+        view_root.geometry("520x400")
+        view_root["bg"] = "#A29476"
+        players_frame = LabelFrame(view_root, text="PLAYER DATABASE", bg="#ABCABD", fg="#EEEEFC",
+                                   font=("Comic Sans", 14, "bold"), labelanchor="n", width="500", cursor="target",
+                                   height=400)
+        players_frame.grid(padx=(10, 10), pady=(10, 0),row=0, column=0, )  # put it in the middle
+        players_frame.grid_rowconfigure(0, weight=1)
+        players_frame.grid_columnconfigure(0, weight=1)
+        # create tree to show footballers
+        columns = ( "ID","FIRST NAME", "SECOND NAME", "CLUB", "NATIONALITY", "AGE")
+        tree_footballers = ttk.Treeview(players_frame, show='headings', columns=columns, height=15)
+        # define the headings
+        tree_footballers.heading(0, text="ID",anchor=tkinter.W)
+        tree_footballers.heading(1, text="FIRST NAME", anchor=tkinter.W)
+        tree_footballers.heading(2, text="LAST NAME", anchor=tkinter.W)
+        tree_footballers.heading(3, text="CLUB", anchor=tkinter.W)
+        tree_footballers.heading(4, text="NATIONALITY", anchor=tkinter.W)
+        tree_footballers.heading(5, text="AGE", anchor=tkinter.W)
+        #tree_footballers.heading("ID", text="ID", anchor=tkinter.W)
+        #redefine column dimensions
+        tree_footballers.column("ID", width=25,)
+        tree_footballers.column("FIRST NAME", width=100, stretch=NO)
+        tree_footballers.column("SECOND NAME", width=100, stretch=NO)
+        tree_footballers.column("CLUB", width=100, stretch=NO)
+        tree_footballers.column("NATIONALITY", width=100, stretch=NO)
+        tree_footballers.column("AGE", width=40, stretch=NO)
+        tree_footballers.tag_configure("orow")
+        # create a style for the headings
+        style = ttk.Style(view_root)
+        style.theme_use("clam")
+        style.configure("Treeview.Heading", background="#99DA7C", foreground="#A74356")
+        # populate the list
+        for record in list_entries:
+            record_update = list()
+            record_update.append(str(record[0]))
+            record_update.append(record[1])
+            record_update.append(record[2])
+            record_update.append(record[3])
+            record_update.append(record[4])
+            record_update.append(str(record[5]))
+            record_update_tuple = tuple(record_update)
+            tree_footballers.insert('', tkinter.END, values=record_update_tuple)
+        # put the tree on the frame
+        tree_footballers.pack(fill= tkinter.BOTH, expand = True)
+        # create a scrollbar for the tree
+        my_scrollbar = Scrollbar(view_root, orient=tkinter.VERTICAL, command=tree_footballers.yview)
+        tree_footballers.configure(yscrollcommand=my_scrollbar.set)
+        my_scrollbar.grid(row=0, column=1, sticky='ns')
+        '''
+        here we will bind the view in order to select the item and open a new root
+        '''
+        tree_footballers.bind("<Double-Button-1>", self.open_entry)
+        view_root.mainloop()
+
     '''MENU PART'''
 
     def cancel_gui(self):
@@ -372,11 +516,11 @@ class GuiInterface:
         root = Tk()
         root.title("SQL TRAINING")
         root.iconbitmap(r"2020-world11-men-1100-names.ico")
-        root.geometry("700x300")
+        root.geometry("850x300")
         root["bg"] = "#B5EFEE"
         # create three buttons and a frame
         app_menu = LabelFrame(root, text="Football Database", bg="#CEDE2F", fg="#EEEEFC",
-                              font=("Comic Sans", 20, "bold"), labelanchor="n", width="400", cursor="target",
+                              font=("Comic Sans", 20, "bold"), labelanchor="n", width="600", cursor="target",
                               height=200)
         app_menu.grid(padx=50, pady=30, row=0, column=0, )  # put it in the middle
         app_menu.grid_rowconfigure(0, weight=1)
@@ -390,11 +534,16 @@ class GuiInterface:
         delete_button = Button(app_menu, fg="#151714", bg="#C9334F", font=("Comic Sans", 11, "bold"), bd=5,
                                cursor="target", width=18, height=2, justify="center", text="DELETE",
                                command=self.open_delete)
+        view_all_button = Button(app_menu, fg="#151714", bg="#A29476", font=("Comic Sans", 11, "bold"), bd=5,
+                                 cursor="target", width=18, height=2, justify="center", text="VIEW ALL",
+                                 command=lambda: self.see_records(self.table)
+                                 )
         add_button.grid(row=0, column=0, padx=10, pady=15, ipady=20)
         select_button.grid(row=0, column=1, padx=10, pady=15, ipady=20)
         delete_button.grid(row=0, column=2, padx=10, pady=15, ipady=20)
+        view_all_button.grid(row=0, column=3, padx=10, pady=15, ipady=20)
         cancel_button = Button(app_menu, fg="#151714", bg="#BDBCAF", font=("Comic Sans", 11, "bold"), bd=5,
                                cursor="target", height=2, justify="center", text="CANCEL", command=self.cancel_gui)
-        cancel_button.grid(row=1, column=0, columnspan=3, padx=10, sticky="nsew")
+        cancel_button.grid(row=1, column=0, columnspan=4, padx=10, sticky="nsew")
 
         root.mainloop()
